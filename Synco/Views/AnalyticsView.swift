@@ -19,23 +19,40 @@ struct AnalyticsView: View {
         
         NavigationStack {
             
-            VStack {
-
-                Image(systemName: "brain")
-                    .font(.system(size: 60))
-
-
-                List(
-                    PatternAnalyzer.analyze(
-                        entries: entries
-                    ),
-                    id: \.self
-                ) { insight in
+            ScrollView {
+                
+                VStack {
                     
-                    Text(insight)
-                        .padding()
+                    Image(systemName: "brain")
+                        .font(.system(size: 60))
+                    
+                    ProductivityChartView(
+                        entries: entries
+                    )
+                    
+                    ForEach(
+                        PatternAnalyzer.analyze(
+                            entries: entries
+                        ),
+                        id: \.self
+                    ) { insight in
+                        
+                        
+                        Text(insight)
+                            .frame(
+                                maxWidth: .infinity,
+                                alignment: .leading
+                            )
+                            .padding()
+                            .background(.regularMaterial)
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: 16
+                                )
+                            )
+                            .padding(.horizontal)
+                    }
                 }
-
             }
             .navigationTitle("Analytics")
         }
