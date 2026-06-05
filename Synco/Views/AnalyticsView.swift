@@ -6,24 +6,39 @@
 //
 
 import SwiftUI
+import SwiftData
+
 
 struct AnalyticsView: View {
+    
+    
+    @Query private var entries: [DailyEntry]
+    
+    
     var body: some View {
         
         NavigationStack {
             
-            VStack {
+            VStack(spacing: 20) {
                 
-                Image(systemName: "chart.xyaxis.line")
+                Image(systemName: "brain")
                     .font(.system(size: 60))
                 
-                Text("Your insights appear here")
+                
+                Text(
+                    PatternAnalyzer.analyze(
+                        entries: entries
+                    )
+                )
+                .multilineTextAlignment(.center)
+                .padding()
                 
             }
             .navigationTitle("Analytics")
         }
     }
 }
+
 
 #Preview {
     AnalyticsView()
