@@ -11,56 +11,177 @@ import Foundation
 struct PatternAnalyzer {
     
     
-    static func analyze(entries: [DailyEntry]) -> String {
+    static func analyze(entries: [DailyEntry]) -> [String] {
         
         
         guard entries.count >= 3 else {
-            return "Keep logging to discover patterns."
+            return [
+                "Keep logging to discover patterns."
+            ]
         }
         
         
-        let goodSleepEntries = entries.filter {
+        var insights: [String] = []
+        
+        
+        analyzeSleep(
+            entries,
+            insights: &insights
+        )
+        
+        analyzeCoffee(
+            entries,
+            insights: &insights
+        )
+        
+        analyzeExercise(
+            entries,
+            insights: &insights
+        )
+        
+        analyzeStudy(
+            entries,
+            insights: &insights
+        )
+        
+        
+        if insights.isEmpty {
+            insights.append(
+                "No strong patterns discovered yet."
+            )
+        }
+        
+        
+        return insights
+    }
+    
+    
+    // MARK: - Sleep
+    
+    
+    private static func analyzeSleep(
+        _ entries: [DailyEntry],
+        insights: inout [String]
+    ) {
+        
+        let goodSleep = entries.filter {
             $0.sleepHours >= 7
         }
         
-        
-        let lowSleepEntries = entries.filter {
+        let lowSleep = entries.filter {
             $0.sleepHours < 7
         }
         
         
-        guard !goodSleepEntries.isEmpty,
-              !lowSleepEntries.isEmpty else {
-            return "Not enough variation yet."
+        compare(
+            first: goodSleep,
+            second: lowSleep,
+            title: "😴 Sleep Pattern",
+            positive: "You are more productive with 7+ hours of sleep.",
+            insights: &insights
+        )
+    }
+    
+    
+    
+    // MARK: - Coffee
+    
+    
+    private static func analyzeCoffee(
+        _ entries: [DailyEntry],
+        insights: inout [String]
+    ) {
+        
+        compare(
+            first: entries.filter { $0.coffee },
+            second: entries.filter { !$0.coffee },
+            title: "☕ Coffee Pattern",
+            positive: "Coffee days are linked with higher productivity.",
+            insights: &insights
+        )
+    }
+    
+    
+    
+    // MARK: - Exercise
+    
+    
+    private static func analyzeExercise(
+        _ entries: [DailyEntry],
+        insights: inout [String]
+    ) {
+        
+        compare(
+            first: entries.filter { $0.exercise },
+            second: entries.filter { !$0.exercise },
+            title: "🏃 Exercise Pattern",
+            positive: "Exercise days usually have higher productivity.",
+            insights: &insights
+        )
+    }
+    
+    
+    
+    // MARK: - Study
+    
+    
+    private static func analyzeStudy(
+        _ entries: [DailyEntry],
+        insights: inout [String]
+    ) {
+        
+        compare(
+            first: entries.filter { $0.studied },
+            second: entries.filter { !$0.studied },
+            title: "📚 Study Pattern",
+            positive: "Studying appears on your productive days.",
+            insights: &insights
+        )
+    }
+    
+    
+    
+    // MARK: - Helpers
+    
+    
+    private static func compare(
+        first: [DailyEntry],
+        second: [DailyEntry],
+        title: String,
+        positive: String,
+        insights: inout [String]
+    ) {
+        
+        
+        guard !first.isEmpty,
+              !second.isEmpty else {
+            return
         }
         
         
-        let goodSleepAverage =
-        averageProductivity(goodSleepEntries)
+        let firstAverage =
+        averageProductivity(first)
+        
+        let secondAverage =
+        averageProductivity(second)
         
         
-        let lowSleepAverage =
-        averageProductivity(lowSleepEntries)
-        
-        
-        if goodSleepAverage > lowSleepAverage {
+        if firstAverage > secondAverage {
             
-            return """
-            😴 Better sleep detected
+            let difference =
+            firstAverage - secondAverage
             
-            Your productivity is higher when you sleep 7+ hours.
             
-            Average:
-            \(String(format: "%.1f", goodSleepAverage))/10 vs \(String(format: "%.1f", lowSleepAverage))/10
-            """
-            
-        } else {
-            
-            return """
-            🧠 Pattern detected
-            
-            Sleep does not appear to increase productivity yet.
-            """
+            insights.append(
+                """
+                \(title)
+                
+                \(positive)
+                
+                Difference:
+                +\(String(format: "%.1f", difference)) points
+                """
+            )
         }
     }
     

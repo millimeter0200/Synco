@@ -19,20 +19,23 @@ struct AnalyticsView: View {
         
         NavigationStack {
             
-            VStack(spacing: 20) {
-                
+            VStack {
+
                 Image(systemName: "brain")
                     .font(.system(size: 60))
-                
-                
-                Text(
+
+
+                List(
                     PatternAnalyzer.analyze(
                         entries: entries
-                    )
-                )
-                .multilineTextAlignment(.center)
-                .padding()
-                
+                    ),
+                    id: \.self
+                ) { insight in
+                    
+                    Text(insight)
+                        .padding()
+                }
+
             }
             .navigationTitle("Analytics")
         }
