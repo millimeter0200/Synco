@@ -38,19 +38,11 @@ struct AnalyticsView: View {
                     ) { insight in
                         
                         
-                        Text(insight)
-                            .frame(
-                                maxWidth: .infinity,
-                                alignment: .leading
-                            )
-                            .padding()
-                            .background(.regularMaterial)
-                            .clipShape(
-                                RoundedRectangle(
-                                    cornerRadius: 16
-                                )
-                            )
-                            .padding(.horizontal)
+                        SyncoCard {
+                            
+                            Text(insight)
+                        }
+                        .padding(.horizontal)
                     }
                 }
             }
