@@ -33,16 +33,15 @@ struct AnalyticsView: View {
                     ForEach(
                         PatternAnalyzer.analyze(
                             entries: entries
-                        ),
-                        id: \.self
+                        )
                     ) { insight in
                         
                         
-                        SyncoCard {
-                            
-                            Text(insight)
-                        }
+                        InsightCard(
+                            insight: insight
+                        )
                         .padding(.horizontal)
+                        
                     }
                 }
             }

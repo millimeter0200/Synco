@@ -11,28 +11,59 @@ import Foundation
 struct PatternAnalyzer {
     
     
-    static func analyze(entries: [DailyEntry]) -> [String] {
+    static func analyze(entries: [DailyEntry]) -> [PatternInsight] {
         
         
         guard entries.count >= 3 else {
+            
             return [
-                "Keep logging to discover patterns."
+                PatternInsight(
+                    icon: "🧠",
+                    title: "Learning",
+                    message: "Keep syncing your days to discover patterns.",
+                    percentage: 0,
+                    confidence: "Low",
+                    sampleSize: entries.count
+                )
             ]
         }
         
         
-        var insights: [String] = []
+        var insights: [PatternInsight] = []
         
         
-        analyzeSleep(entries, insights: &insights)
-        analyzeCoffee(entries, insights: &insights)
-        analyzeExercise(entries, insights: &insights)
-        analyzeStudy(entries, insights: &insights)
+        analyzeSleep(
+            entries,
+            insights: &insights
+        )
+        
+        analyzeCoffee(
+            entries,
+            insights: &insights
+        )
+        
+        analyzeExercise(
+            entries,
+            insights: &insights
+        )
+        
+        analyzeStudy(
+            entries,
+            insights: &insights
+        )
         
         
         if insights.isEmpty {
+
             insights.append(
-                "No strong patterns discovered yet."
+                PatternInsight(
+                    icon: "🧠",
+                    title: "Learning",
+                    message: "Keep syncing your days to discover yourself.",
+                    percentage: 0,
+                    confidence: "Low",
+                    sampleSize: entries.count
+                )
             )
         }
         
@@ -41,95 +72,102 @@ struct PatternAnalyzer {
     }
     
     
-    // MARK: - Categories
+    // MARK: - Sleep
     
     
     private static func analyzeSleep(
         _ entries: [DailyEntry],
-        insights: inout [String]
+        insights: inout [PatternInsight]
     ) {
         
+        let goodSleep = entries.filter {
+            $0.sleepHours >= 7
+        }
+        
+        let lowSleep = entries.filter {
+            $0.sleepHours < 7
+        }
+        
+        
         compare(
-            first: entries.filter {
-                $0.sleepHours >= 7
-            },
-            second: entries.filter {
-                $0.sleepHours < 7
-            },
-            title: "😴 Sleep",
-            description: "7+ hours of sleep is associated with productivity.",
+            first: goodSleep,
+            second: lowSleep,
+            title: "😴 Sleep Pattern",
+            positive: "You are more productive with 7+ hours of sleep.",
             insights: &insights
         )
     }
+    
+    
+    
+    // MARK: - Coffee
     
     
     private static func analyzeCoffee(
         _ entries: [DailyEntry],
-        insights: inout [String]
+        insights: inout [PatternInsight]
     ) {
         
         compare(
-            first: entries.filter {
-                $0.coffee
-            },
-            second: entries.filter {
-                !$0.coffee
-            },
-            title: "☕ Coffee",
-            description: "Coffee days show a productivity difference.",
+            first: entries.filter { $0.coffee },
+            second: entries.filter { !$0.coffee },
+            title: "☕ Coffee Pattern",
+            positive: "Coffee days are linked with higher productivity.",
             insights: &insights
         )
     }
+    
+    
+    
+    // MARK: - Exercise
     
     
     private static func analyzeExercise(
         _ entries: [DailyEntry],
-        insights: inout [String]
+        insights: inout [PatternInsight]
     ) {
         
         compare(
-            first: entries.filter {
-                $0.exercise
-            },
-            second: entries.filter {
-                !$0.exercise
-            },
-            title: "🏃 Exercise",
-            description: "Exercise days show a productivity difference.",
+            first: entries.filter { $0.exercise },
+            second: entries.filter { !$0.exercise },
+            title: "🏃 Exercise Pattern",
+            positive: "Exercise days usually have higher productivity.",
             insights: &insights
         )
     }
+    
+    
+    
+    // MARK: - Study
     
     
     private static func analyzeStudy(
         _ entries: [DailyEntry],
-        insights: inout [String]
+        insights: inout [PatternInsight]
     ) {
         
         compare(
-            first: entries.filter {
-                $0.studied
-            },
-            second: entries.filter {
-                !$0.studied
-            },
-            title: "📚 Study",
-            description: "Study days appear related to productivity.",
+            first: entries.filter { $0.studied },
+            second: entries.filter { !$0.studied },
+            title: "📚 Study Pattern",
+            positive: "Studying appears on your productive days.",
             insights: &insights
         )
     }
     
     
-    // MARK: - Engine
+    
+    // MARK: - Helpers
     
     
     private static func compare(
         first: [DailyEntry],
         second: [DailyEntry],
         title: String,
-        description: String,
-        insights: inout [String]
+        positive: String,
+        insights: inout [PatternInsight]
     ) {
+        
         
         guard !first.isEmpty,
               !second.isEmpty else {
@@ -144,62 +182,32 @@ struct PatternAnalyzer {
         averageProductivity(second)
         
         
-        let difference =
-        firstAverage - secondAverage
-        
-        
-        guard abs(difference) >= 1 else {
-            return
-        }
-        
-        
-        let percentage =
-        (difference / secondAverage) * 100
-        
-        
-        let confidence =
-        confidenceLevel(
-            sampleSize: first.count + second.count
-        )
-        
-        
-        let direction =
-        difference > 0 ? "higher" : "lower"
-        
-        
-        insights.append(
-            """
-            \(title)
+        if firstAverage > secondAverage {
             
-            \(description)
+            let difference =
+            firstAverage - secondAverage
             
-            Productivity is \(direction) by:
-            \(String(format: "%.0f", abs(percentage)))%
+            let direction = difference > 0 ? "positive" : "negative"
+
+            let percentage = Int(
+                (abs(difference) / max(firstAverage, secondAverage)) * 100
+            )
+
+            let confidence =
+                first.count + second.count >= 10 ? "High" : "Medium"
             
-            Confidence:
-            \(confidence)
             
-            Based on:
-            \(first.count + second.count) entries
-            """
-        )
-    }
-    
-    
-    private static func confidenceLevel(
-        sampleSize: Int
-    ) -> String {
-        
-        switch sampleSize {
-            
-        case 0..<7:
-            return "Low"
-            
-        case 7..<20:
-            return "Medium"
-            
-        default:
-            return "High"
+            insights.append(
+                PatternInsight(
+                    icon: String(title.prefix(1)),
+                    title: title,
+                    message:
+                    "Productivity is \(direction) when this pattern appears.",
+                    percentage: Double(percentage),
+                    confidence: confidence,
+                    sampleSize: first.count + second.count
+                )
+            )
         }
     }
     
