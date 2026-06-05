@@ -24,25 +24,10 @@ struct PatternAnalyzer {
         var insights: [String] = []
         
         
-        analyzeSleep(
-            entries,
-            insights: &insights
-        )
-        
-        analyzeCoffee(
-            entries,
-            insights: &insights
-        )
-        
-        analyzeExercise(
-            entries,
-            insights: &insights
-        )
-        
-        analyzeStudy(
-            entries,
-            insights: &insights
-        )
+        analyzeSleep(entries, insights: &insights)
+        analyzeCoffee(entries, insights: &insights)
+        analyzeExercise(entries, insights: &insights)
+        analyzeStudy(entries, insights: &insights)
         
         
         if insights.isEmpty {
@@ -56,7 +41,7 @@ struct PatternAnalyzer {
     }
     
     
-    // MARK: - Sleep
+    // MARK: - Categories
     
     
     private static func analyzeSleep(
@@ -64,27 +49,18 @@ struct PatternAnalyzer {
         insights: inout [String]
     ) {
         
-        let goodSleep = entries.filter {
-            $0.sleepHours >= 7
-        }
-        
-        let lowSleep = entries.filter {
-            $0.sleepHours < 7
-        }
-        
-        
         compare(
-            first: goodSleep,
-            second: lowSleep,
-            title: "😴 Sleep Pattern",
-            positive: "You are more productive with 7+ hours of sleep.",
+            first: entries.filter {
+                $0.sleepHours >= 7
+            },
+            second: entries.filter {
+                $0.sleepHours < 7
+            },
+            title: "😴 Sleep",
+            description: "7+ hours of sleep is associated with productivity.",
             insights: &insights
         )
     }
-    
-    
-    
-    // MARK: - Coffee
     
     
     private static func analyzeCoffee(
@@ -93,17 +69,17 @@ struct PatternAnalyzer {
     ) {
         
         compare(
-            first: entries.filter { $0.coffee },
-            second: entries.filter { !$0.coffee },
-            title: "☕ Coffee Pattern",
-            positive: "Coffee days are linked with higher productivity.",
+            first: entries.filter {
+                $0.coffee
+            },
+            second: entries.filter {
+                !$0.coffee
+            },
+            title: "☕ Coffee",
+            description: "Coffee days show a productivity difference.",
             insights: &insights
         )
     }
-    
-    
-    
-    // MARK: - Exercise
     
     
     private static func analyzeExercise(
@@ -112,17 +88,17 @@ struct PatternAnalyzer {
     ) {
         
         compare(
-            first: entries.filter { $0.exercise },
-            second: entries.filter { !$0.exercise },
-            title: "🏃 Exercise Pattern",
-            positive: "Exercise days usually have higher productivity.",
+            first: entries.filter {
+                $0.exercise
+            },
+            second: entries.filter {
+                !$0.exercise
+            },
+            title: "🏃 Exercise",
+            description: "Exercise days show a productivity difference.",
             insights: &insights
         )
     }
-    
-    
-    
-    // MARK: - Study
     
     
     private static func analyzeStudy(
@@ -131,27 +107,29 @@ struct PatternAnalyzer {
     ) {
         
         compare(
-            first: entries.filter { $0.studied },
-            second: entries.filter { !$0.studied },
-            title: "📚 Study Pattern",
-            positive: "Studying appears on your productive days.",
+            first: entries.filter {
+                $0.studied
+            },
+            second: entries.filter {
+                !$0.studied
+            },
+            title: "📚 Study",
+            description: "Study days appear related to productivity.",
             insights: &insights
         )
     }
     
     
-    
-    // MARK: - Helpers
+    // MARK: - Engine
     
     
     private static func compare(
         first: [DailyEntry],
         second: [DailyEntry],
         title: String,
-        positive: String,
+        description: String,
         insights: inout [String]
     ) {
-        
         
         guard !first.isEmpty,
               !second.isEmpty else {
@@ -166,22 +144,62 @@ struct PatternAnalyzer {
         averageProductivity(second)
         
         
-        if firstAverage > secondAverage {
+        let difference =
+        firstAverage - secondAverage
+        
+        
+        guard abs(difference) >= 1 else {
+            return
+        }
+        
+        
+        let percentage =
+        (difference / secondAverage) * 100
+        
+        
+        let confidence =
+        confidenceLevel(
+            sampleSize: first.count + second.count
+        )
+        
+        
+        let direction =
+        difference > 0 ? "higher" : "lower"
+        
+        
+        insights.append(
+            """
+            \(title)
             
-            let difference =
-            firstAverage - secondAverage
+            \(description)
             
+            Productivity is \(direction) by:
+            \(String(format: "%.0f", abs(percentage)))%
             
-            insights.append(
-                """
-                \(title)
-                
-                \(positive)
-                
-                Difference:
-                +\(String(format: "%.1f", difference)) points
-                """
-            )
+            Confidence:
+            \(confidence)
+            
+            Based on:
+            \(first.count + second.count) entries
+            """
+        )
+    }
+    
+    
+    private static func confidenceLevel(
+        sampleSize: Int
+    ) -> String {
+        
+        switch sampleSize {
+            
+        case 0..<7:
+            return "Low"
+            
+        case 7..<20:
+            return "Medium"
+            
+        default:
+            return "High"
         }
     }
     
