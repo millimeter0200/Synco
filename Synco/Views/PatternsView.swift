@@ -6,27 +6,49 @@
 //
 
 import SwiftUI
+import SwiftData
+
 
 struct PatternsView: View {
+    
+    @Query(sort: \DailyEntry.date, order: .reverse)
+    private var entries: [DailyEntry]
+    
+    
     var body: some View {
         
         NavigationStack {
             
-            VStack {
+            List {
                 
-                Image(systemName: "brain")
-                    .font(.system(size: 60))
-                
-                Text("No patterns yet")
-                    .font(.title)
-                
-                Text("Log more days to discover yourself")
-                    .foregroundStyle(.secondary)
+                ForEach(entries) { entry in
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        
+                        Text(entry.date.formatted(
+                            date: .abbreviated,
+                            time: .shortened
+                        ))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        
+                        Text(entry.mood)
+                            .font(.largeTitle)
+                        
+                        Text("Sleep: \(entry.sleepHours, specifier: "%.1f") hours")
+                        
+                        Text("Energy: \(entry.energy)/10")
+                        
+                        Text("Productivity: \(entry.productivity)/10")
+                    }
+                    .padding(.vertical, 8)
+                }
             }
             .navigationTitle("Patterns")
         }
     }
 }
+
 
 #Preview {
     PatternsView()
