@@ -13,7 +13,10 @@ struct PatternsView: View {
     
     @Environment(\.modelContext) private var context
     
-    @Query(sort: \DailyEntry.date, order: .reverse)
+    @Query(
+        sort: \DailyEntry.date,
+        order: .reverse
+    )
     private var entries: [DailyEntry]
     
     @State private var showingDeleteAlert = false
@@ -62,10 +65,11 @@ struct PatternsView: View {
                             
                             VStack(alignment: .leading, spacing: 8) {
                                 
-                                Text(entry.date.formatted(
-                                    date: .abbreviated,
-                                    time: .shortened
-                                ))
+                                Text(
+                                    DateFormatterHelper.format(entry.date)
+                                )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 
