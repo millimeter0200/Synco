@@ -16,56 +16,118 @@ struct PatternsView: View {
     @Query(sort: \DailyEntry.date, order: .reverse)
     private var entries: [DailyEntry]
     
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         
         NavigationStack {
             
-            List {
-                
-                ForEach(entries) { entry in
-                    
-                    NavigationLink {
+            if entries.isEmpty {
 
-                        EditEntryView(entry: entry)
+                    VStack(spacing: 16) {
 
-                    } label: {
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            
-                            Text(entry.date.formatted(
-                                date: .abbreviated,
-                                time: .shortened
-                            ))
-                            .font(.caption)
+                        Image(systemName: "leaf")
+
+                            .font(.system(size: 60))
+
+                        Text("No patterns yet")
+
+                            .font(.title2)
+
+                            .bold()
+
+                        Text("Sync your first day to start discovering your habits.")
+
                             .foregroundStyle(.secondary)
+
+                            .multilineTextAlignment(.center)
+
+                    }
+
+                    .padding()
+
+                    .navigationTitle("Patterns")
+
+            } else {
+                
+                List {
+                    
+                    ForEach(entries) { entry in
+                        
+                        NavigationLink {
                             
-                            Text(entry.mood)
-                                .font(.largeTitle)
+                            EditEntryView(entry: entry)
                             
-                            Text("Sleep: \(entry.sleepHours, specifier: "%.1f") hours")
+                        } label: {
                             
-                            Text("Energy: \(entry.energy)/10")
-                            
-                            Text("Productivity: \(entry.productivity)/10")
+                            VStack(alignment: .leading, spacing: 8) {
+                                
+                                Text(entry.date.formatted(
+                                    date: .abbreviated,
+                                    time: .shortened
+                                ))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                
+                                Text(entry.mood)
+                                    .font(.largeTitle)
+                                
+                                Text("Sleep: \(entry.sleepHours, specifier: "%.1f") hours")
+                                
+                                Text("Energy: \(entry.energy)/10")
+                                
+                                Text("Productivity: \(entry.productivity)/10")
+                            }
+                            .padding(.vertical, 8)
                         }
-                        .padding(.vertical, 8)
+                    }
+                    .onDelete { indexSet in
+                        for index in indexSet {
+                            context.delete(entries[index])
+                        }
+                        
+                        do {
+                            try context.save()
+                            print("Entry deleted")
+                        } catch {
+                            print(error)
+                        }
                     }
                 }
-                .onDelete { indexSet in
-                    for index in indexSet {
-                        context.delete(entries[index])
+                .navigationTitle("Patterns")
+                
+                .toolbar {
+                    if !entries.isEmpty {
+                        Button("Clear All") {
+                            showingDeleteAlert = true
+                        }
+                    }
+                }
+            
+                .alert(
+                    "Delete all entries?",
+                    isPresented: $showingDeleteAlert
+                ) {
+                    Button("Delete", role: .destructive) {
+
+                        for entry in entries {
+                            context.delete(entry)
+                        }
+
+                        do {
+                            try context.save()
+                            print("All entries deleted")
+                        } catch {
+                            print("Delete failed: \(error)")
+                        }
                     }
 
-                    do {
-                        try context.save()
-                        print("Entry deleted")
-                    } catch {
-                        print("Delete failed: \(error)")
-                    }
+                    Button("Cancel", role: .cancel) {}
+
+                } message: {
+                    Text("This action cannot be undone.")
                 }
             }
-            .navigationTitle("Patterns")
         }
     }
 }

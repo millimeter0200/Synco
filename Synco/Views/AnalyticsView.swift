@@ -19,33 +19,62 @@ struct AnalyticsView: View {
         
         NavigationStack {
             
-            ScrollView {
+            if entries.count < 3 {
+
+                    VStack(spacing: 16) {
+
+                        Image(systemName: "brain")
+
+                            .font(.system(size: 60))
+
+                        Text("Learning your patterns")
+
+                            .font(.title2)
+
+                            .bold()
+
+                        Text("Sync at least 3 days to unlock personal insights.")
+
+                            .foregroundStyle(.secondary)
+
+                            .multilineTextAlignment(.center)
+
+                    }
+
+                    .padding()
+
+                    .navigationTitle("Analytics")
+
+            } else {
                 
-                VStack {
+                ScrollView {
                     
-                    Image(systemName: "brain")
-                        .font(.system(size: 60))
-                    
-                    ProductivityChartView(
-                        entries: entries
-                    )
-                    
-                    ForEach(
-                        PatternAnalyzer.analyze(
+                    VStack {
+                        
+                        Image(systemName: "brain")
+                            .font(.system(size: 60))
+                        
+                        ProductivityChartView(
                             entries: entries
                         )
-                    ) { insight in
                         
-                        
-                        InsightCard(
-                            insight: insight
-                        )
-                        .padding(.horizontal)
-                        
+                        ForEach(
+                            PatternAnalyzer.analyze(
+                                entries: entries
+                            )
+                        ) { insight in
+                            
+                            
+                            InsightCard(
+                                insight: insight
+                            )
+                            .padding(.horizontal)
+                            
+                        }
                     }
                 }
+                .navigationTitle("Analytics")
             }
-            .navigationTitle("Analytics")
         }
     }
 }
