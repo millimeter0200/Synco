@@ -17,6 +17,8 @@ struct TodayView: View {
     @State private var energy = 5
     @State private var productivity = 5
     
+    @State private var showSavedAlert = false
+    
     @State private var coffee = false
     @State private var exercise = false
     @State private var studied = false
@@ -188,11 +190,12 @@ struct TodayView: View {
                     
                     
                     Button {
-                        
+
                         saveEntry()
-                        
+                        showSavedAlert = true
+
                     } label: {
-                        
+
                         Text("Sync my day")
                             .bold()
                             .frame(
@@ -201,6 +204,11 @@ struct TodayView: View {
                             .padding()
                     }
                     .buttonStyle(.borderedProminent)
+                    .alert("Day synced ✨", isPresented: $showSavedAlert) {
+                        Button("OK", role: .cancel) { }
+                    } message: {
+                        Text("Your entry has been saved.")
+                    }
                     
                     
                 }
