@@ -63,20 +63,11 @@ struct TodayView: View {
                                 selection: $mood
                             ) {
                                 
-                                Text("😊 Happy")
-                                    .tag("😊")
-                                
-                                Text("😌 Calm")
-                                    .tag("😌")
-                                
-                                Text("😐 Okay")
-                                    .tag("😐")
-                                
-                                Text("😴 Tired")
-                                    .tag("😴")
-                                
-                                Text("😔 Low")
-                                    .tag("😔")
+                                Text("😊").tag("😊 Happy")
+                                Text("😌").tag("😌 Calm")
+                                Text("😐").tag("😐 Okay")
+                                Text("😴").tag("😴 Tired")
+                                Text("😔").tag("😔 Low")
                             }
                             .pickerStyle(.segmented)
                         }
