@@ -11,6 +11,8 @@ import SwiftData
 
 struct PatternsView: View {
     
+    @Environment(\.modelContext) private var context
+    
     @Query(sort: \DailyEntry.date, order: .reverse)
     private var entries: [DailyEntry]
     
@@ -42,6 +44,18 @@ struct PatternsView: View {
                         Text("Productivity: \(entry.productivity)/10")
                     }
                     .padding(.vertical, 8)
+                }
+                .onDelete { indexSet in
+                    for index in indexSet {
+                        context.delete(entries[index])
+                    }
+
+                    do {
+                        try context.save()
+                        print("Entry deleted")
+                    } catch {
+                        print("Delete failed: \(error)")
+                    }
                 }
             }
             .navigationTitle("Patterns")
