@@ -22,9 +22,8 @@ struct AnalyticsView: View {
             if entries.count < 3 {
 
                     VStack(spacing: 16) {
-
+                        
                         Image(systemName: "brain")
-
                             .font(.system(size: 60))
 
                         Text("Learning your patterns")
@@ -50,9 +49,6 @@ struct AnalyticsView: View {
                 ScrollView {
                     
                     VStack {
-                        
-                        Image(systemName: "brain")
-                            .font(.system(size: 60))
                         
                         ProductivityChartView(
                             entries: entries
